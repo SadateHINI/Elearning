@@ -1,0 +1,14 @@
+# syntax=docker/dockerfile:1.2
+FROM maven:3.8.6-openjdk-11-slim AS build
+
+WORKDIR /app
+
+# Build phase
+COPY . /app/.
+RUN chmod +x ./mvnw && ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list install
+
+FROM openjdk:11-jre-slim
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
